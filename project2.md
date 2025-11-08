@@ -41,7 +41,8 @@ As a solution to the "black box" problem, we presented the field of "Explainable
 * **Presentation:** Microsoft PowerPoint was used to structure, visualize, and present our findings.
 * **Collaboration:** This was a group project requiring coordination, discussion, and synthesis of research from all members (Akhil, Riyaz, Deepika, Muhammad Gufran, Karthik Ram).
 
-* [Download the original presentation (PDF)](./assets/p2.pdf)
+---
+[Download the original presentation (PDF)](./assets/p2.pdf)
 
 ---
 
