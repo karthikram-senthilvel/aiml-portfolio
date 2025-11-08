@@ -22,7 +22,10 @@ To create this artifact, I followed these steps:
 * **Screen-Capture Tool:** Used to generate the visual evidence (screenshots) for the guide.
 
 ## Screenshots
-<!-- Images will be added later -->
+
+![AI Lab Screenshot 1](./images/p1-1.png)
+![AI Lab Screenshot 2](./images/p1-2.png)
+![AI Lab Screenshot 3](./images/p1-3.png)
 
 ---
 
