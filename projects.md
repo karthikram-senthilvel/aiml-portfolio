@@ -9,5 +9,8 @@
 * ### [Lessons from AI - Adaptive Learning](./project3)
     Change management related to AI Projects
 
+* ### [Demystifying ML: A Deep Dive into Training Methods](./project4)
+    A synthesis of core training methodologies and mechanics found in modern AI.
+
 ---
 * [Back to Home](./)
