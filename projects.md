@@ -12,5 +12,8 @@
 * ### [Demystifying ML: A Deep Dive into Training Methods](./project4)
     A synthesis of core training methodologies and mechanics found in modern AI.
 
+* ### [Bias Mitigation and Fair Feature Engineering](./project4)
+    A project demonstrating technical strategies to measure and reduce disparate impact in predictive models, ensuring ethical and fair outcomes.
+
 ---
 * [Back to Home](./)
