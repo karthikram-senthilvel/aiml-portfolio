@@ -15,5 +15,8 @@
 * ### [Bias Mitigation and Fair Feature Engineering](./project4)
     A project demonstrating technical strategies to measure and reduce disparate impact in predictive models, ensuring ethical and fair outcomes.
 
+* ### [Personal Framework for AI/ML Leadership](./project6)
+    A strategic roadmap defining my mission to lead human-centric AI transformation in supply chain operations. This framework outlines my core values of stewardship and transparency, along with actionable objectives to bridge the gap between technical algorithms and the human workforce.
+
 ---
 * [Back to Home](./)
