@@ -1,7 +1,4 @@
----
-layout: default
-title: Personal Framework for AI/ML Leadership
----
+
 
 # Personal Framework for AI/ML Leadership
 
