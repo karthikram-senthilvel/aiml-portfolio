@@ -31,4 +31,4 @@ From a professional standpoint, this reinforced something I lean on in supply ch
 
 ## Presentation
 
-[Download Slide Deck](./assets/Understanding_Neural_Networks.pptx)
+[Download Slide Deck](./assets/p7Understanding_Neural_Networks.pptx)
