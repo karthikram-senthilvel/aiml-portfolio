@@ -27,5 +27,8 @@
 * ### [How a Large Language Model Is Trained](./project9)
     An infographic mapping the LLM training pipeline — from data collection to deployment — with the resource economics behind frontier models like GPT-4, Claude, and Llama 3.1 405B.
 
+* ### [Explainable AI — Inside the Black Box](./project10)
+    An interactive infographic on explainable AI — why transparency matters, the challenges of opening the black box, how models and explanations are validated, and the techniques industry leaders use to make AI understandable.
+
 ---
 * [Back to Home](./)
