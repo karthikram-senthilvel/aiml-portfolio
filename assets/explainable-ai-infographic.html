@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inside the Black Box — Explainable AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Spline+Sans:wght@300..600&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b0d13;
+    --ink-2:#11141d;
+    --panel:#151926;
+    --panel-2:#1b2030;
+    --line:#2a3142;
+    --line-soft:#222838;
+    --paper:#ece9e0;
+    --paper-dim:#a7adba;
+    --muted:#79808f;
+    --gold:#f4b942;       /* illumination */
+    --gold-deep:#d99a1f;
+    --teal:#5ad1cd;        /* signal */
+    --teal-deep:#2f9d99;
+    --rose:#e08a7d;        /* friction / challenge */
+    --maxw:1080px;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Spline Sans",system-ui,sans-serif;
+    --mono:"Spline Sans Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--sans);
+    font-weight:300;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* atmospheric base */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(900px 500px at 78% -8%, rgba(244,185,66,.10), transparent 60%),
+      radial-gradient(700px 600px at 8% 30%, rgba(90,209,205,.07), transparent 55%);
+  }
+  body::after{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.045;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .wrap{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:0 28px}
+
+  /* ---------- type ---------- */
+  .eyebrow{
+    font-family:var(--mono);font-weight:500;font-size:.72rem;letter-spacing:.34em;
+    text-transform:uppercase;color:var(--gold);display:inline-block;
+  }
+  h1{font-family:var(--serif);font-weight:400;font-optical-sizing:auto;letter-spacing:-.02em;line-height:.98}
+  h2{font-family:var(--serif);font-weight:400;font-size:clamp(1.9rem,4vw,2.9rem);letter-spacing:-.015em;line-height:1.05}
+  h3{font-family:var(--serif);font-weight:500;font-size:1.32rem;letter-spacing:-.01em;line-height:1.15}
+  p{color:var(--paper-dim);font-size:1.02rem}
+  strong{color:var(--paper);font-weight:500}
+  em{color:var(--teal);font-style:italic}
+  .lead{font-size:1.18rem;color:var(--paper);font-weight:300}
+
+  /* ---------- hero ---------- */
+  header{position:relative;padding:96px 0 70px}
+  .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
+  h1{font-size:clamp(3rem,8.5vw,6.2rem)}
+  h1 .glow{color:var(--gold);position:relative}
+  .hero-sub{margin-top:30px;max-width:34ch}
+  .hero-meta{margin-top:38px;display:flex;gap:26px;flex-wrap:wrap;font-family:var(--mono);
+    font-size:.72rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+  .hero-meta span{display:flex;align-items:center;gap:8px}
+  .hero-meta i{width:6px;height:6px;border-radius:50%;background:var(--teal);display:inline-block}
+
+  /* box->glass motif */
+  .motif{position:relative;aspect-ratio:1/1;display:grid;place-items:center}
+  .box{
+    width:74%;height:74%;border-radius:18px;position:relative;
+    background:linear-gradient(155deg,#0a0c12,#171c2a);
+    border:1px solid var(--line);
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.04);
+    overflow:hidden;
+  }
+  .box .scan{
+    position:absolute;inset:0;
+    background:linear-gradient(transparent 0,rgba(90,209,205,.12) 50%,transparent 100%);
+    background-size:100% 8px;opacity:.5;animation:scan 5s linear infinite;
+  }
+  @keyframes scan{from{background-position:0 -40px}to{background-position:0 calc(100% + 40px)}}
+  .box .core{
+    position:absolute;inset:0;display:grid;place-items:center;
+  }
+  .node{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--gold);
+    box-shadow:0 0 14px 2px rgba(244,185,66,.5)}
+  .edge{position:absolute;height:1px;background:linear-gradient(90deg,transparent,rgba(90,209,205,.55),transparent);transform-origin:left center}
+  .lens{
+    position:absolute;width:120px;height:120px;border-radius:50%;right:-26px;bottom:-26px;
+    border:1.5px solid var(--gold);background:radial-gradient(circle at 38% 34%,rgba(244,185,66,.18),transparent 62%);
+    backdrop-filter:blur(.5px);box-shadow:0 18px 50px -12px rgba(244,185,66,.35);
+  }
+  .lens::after{content:"";position:absolute;width:30px;height:2px;background:var(--gold);
+    bottom:-16px;right:-2px;transform:rotate(45deg);transform-origin:left;border-radius:2px}
+
+  /* ---------- sections ---------- */
+  section{padding:72px 0;border-top:1px solid var(--line-soft);position:relative}
+  .sec-head{display:flex;align-items:baseline;gap:20px;margin-bottom:14px}
+  .sec-num{font-family:var(--mono);font-size:.82rem;color:var(--gold);letter-spacing:.2em}
+  .sec-intro{max-width:62ch;margin-top:18px}
+
+  /* generic cards */
+  .grid{display:grid;gap:18px;margin-top:38px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .card{
+    background:linear-gradient(160deg,var(--panel),var(--ink-2));
+    border:1px solid var(--line);border-radius:14px;padding:24px 22px;position:relative;
+    transition:transform .4s cubic-bezier(.2,.7,.2,1),border-color .4s;
+  }
+  .card:hover{transform:translateY(-4px);border-color:#3b455c}
+  .card .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:12px}
+  .card h3{margin-bottom:8px}
+  .card p{font-size:.93rem}
+  .card .ico{font-family:var(--serif);font-size:1.5rem;color:var(--gold);margin-bottom:6px;display:block}
+
+  /* why-it-matters chips */
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+  .chip{border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:.82rem;
+    color:var(--paper-dim);font-family:var(--mono);letter-spacing:.04em;background:rgba(255,255,255,.015)}
+  .chip b{color:var(--gold);font-weight:500}
+
+  /* definition split */
+  .def{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:38px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--line)}
+  .def>div{background:var(--ink-2);padding:28px 26px}
+  .def .k{font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+
+  /* stat strip */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
+  .stat{padding:22px 4px;border-top:2px solid var(--gold)}
+  .stat .num{font-family:var(--serif);font-size:2.4rem;color:var(--paper);line-height:1}
+  .stat .lbl{font-size:.86rem;color:var(--muted);margin-top:8px}
+
+  /* metrics table */
+  .metrics{margin-top:36px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .mrow{display:grid;grid-template-columns:200px 1fr;gap:0;border-top:1px solid var(--line-soft)}
+  .mrow:first-child{border-top:0}
+  .mrow .ml{padding:18px 22px;background:var(--panel-2);font-family:var(--mono);font-size:.82rem;
+    letter-spacing:.08em;color:var(--gold);display:flex;align-items:center}
+  .mrow .mr{padding:18px 22px;font-size:.95rem;color:var(--paper-dim)}
+  .mrow .mr b{color:var(--paper)}
+
+  /* trust loop diagram */
+  .loop{margin-top:40px;display:grid;grid-template-columns:repeat(5,1fr);gap:0;align-items:stretch}
+  .loop .step{position:relative;padding:24px 16px;text-align:center}
+  .loop .step .n{font-family:var(--mono);font-size:.66rem;color:var(--teal);letter-spacing:.2em}
+  .loop .step h3{font-size:1.05rem;margin-top:8px}
+  .loop .step p{font-size:.82rem;margin-top:6px}
+  .loop .step::after{content:"→";position:absolute;right:-9px;top:50%;transform:translateY(-50%);
+    color:var(--gold);font-size:1.1rem}
+  .loop .step:last-child::after{content:""}
+
+  /* technique tiers */
+  .tier-label{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--teal);margin:42px 0 4px;display:flex;align-items:center;gap:12px}
+  .tier-label::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+
+  /* orgs */
+  .orgs{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:36px}
+  .org{border:1px solid var(--line);border-radius:14px;padding:22px 20px;background:linear-gradient(160deg,var(--panel),var(--ink-2))}
+  .org .who{font-family:var(--serif);font-size:1.15rem;color:var(--paper)}
+  .org p{font-size:.86rem;margin-top:8px}
+
+  /* callout */
+  .callout{margin-top:40px;border-left:2px solid var(--gold);padding:6px 0 6px 26px}
+  .callout p{font-size:1.05rem;color:var(--paper)}
+
+  /* closing */
+  .close{padding:84px 0 40px;text-align:center}
+  .close h2{max-width:18ch;margin:0 auto}
+  .close p{max-width:56ch;margin:22px auto 0}
+
+  footer{border-top:1px solid var(--line-soft);padding:30px 0 60px}
+  .foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--muted)}
+  .foot a{color:var(--teal);text-decoration:none}
+
+  /* reveal animation (additive — content stays visible without JS) */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal:nth-child(2){transition-delay:.06s}
+  .reveal:nth-child(3){transition-delay:.12s}
+  .reveal:nth-child(4){transition-delay:.18s}
+
+  @media(max-width:880px){
+    .hero-grid{grid-template-columns:1fr;gap:40px}
+    .motif{max-width:360px}
+    .g4,.g3,.g2,.orgs,.stats{grid-template-columns:1fr 1fr}
+    .loop{grid-template-columns:1fr 1fr;gap:18px}
+    .loop .step::after{display:none}
+    .def{grid-template-columns:1fr}
+    .mrow{grid-template-columns:1fr}
+  }
+  @media(max-width:540px){
+    .g4,.g3,.g2,.orgs,.stats,.loop{grid-template-columns:1fr}
+    header{padding:60px 0 40px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .box .scan{animation:none}
+  }
+</style>
+<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header>
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow reveal in">Explainable AI · Portfolio Artifact</span>
+      <h1 class="reveal in" style="margin-top:22px">Inside the<br><span class="glow">Black Box</span></h1>
+      <p class="lead hero-sub reveal in">Modern AI can predict, generate, and decide — but <em>can it explain itself?</em> A field-level look at why transparency matters, why it's hard, and how we're prying the box open.</p>
+      <div class="hero-meta reveal in">
+        <span><i></i>Transparency</span>
+        <span><i></i>Validation</span>
+        <span><i></i>Trust</span>
+      </div>
+    </div>
+    <div class="motif reveal in">
+      <div class="box">
+        <div class="scan"></div>
+        <div class="core" id="core"></div>
+      </div>
+      <div class="lens"></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ 1. WHAT & WHY ============ -->
+<section id="what">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">01</span>
+      <h2>What is Explainable AI — and why it matters</h2>
+    </div>
+    <p class="sec-intro lead reveal"><strong>Explainable AI (XAI)</strong> is the set of methods that make a model's behavior understandable to humans — turning a system that simply outputs an answer into one that can show <em>why</em>. As models like GPT, Claude, Gemini, and LLaMA move into high-stakes decisions, the gap between <strong>accurate</strong> and <strong>accountable</strong> becomes the central problem.</p>
+
+    <div class="def">
+      <div class="reveal">
+        <div class="k">Interpretability</div>
+        <p>Understanding the <strong>internal mechanisms</strong> — the features and circuits a model uses to compute an answer. The "open the engine" view.</p>
+      </div>
+      <div class="reveal">
+        <div class="k">Explainability</div>
+        <p>Producing a <strong>human-readable rationale</strong> for a given output — which inputs mattered, and how much. The "read the receipt" view.</p>
+      </div>
+    </div>
+
+    <p class="sec-intro reveal" style="margin-top:30px">Without transparency, an AI system is a confident stranger: it can be right for the wrong reasons, biased in ways no one can see, and impossible to debug, audit, or defend. Explainability is what converts raw capability into something an organization can <em>actually rely on</em>.</p>
+
+    <div class="chips reveal">
+      <span class="chip"><b>Trust</b> &nbsp;users act on what they understand</span>
+      <span class="chip"><b>Accountability</b> &nbsp;decisions can be contested</span>
+      <span class="chip"><b>Debugging</b> &nbsp;fix failures at the cause</span>
+      <span class="chip"><b>Fairness</b> &nbsp;surface hidden bias</span>
+      <span class="chip"><b>Safety</b> &nbsp;catch deceptive reasoning</span>
+      <span class="chip"><b>Compliance</b> &nbsp;meet a right to explanation</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. CHALLENGES ============ -->
+<section id="challenges">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">02</span>
+      <h2>Why explainability is hard</h2>
+    </div>
+    <p class="sec-intro reveal">The difficulty isn't a lack of effort — it's the nature of the systems themselves. Three forces work against transparency at once.</p>
+
+    <div class="stats reveal">
+      <div class="stat">
+        <div class="num">100B+</div>
+        <div class="lbl">Parameters in frontier LLMs — no human can trace the computation by hand</div>
+      </div>
+      <div class="stat">
+        <div class="num">1 ≠ 1</div>
+        <div class="lbl">A single neuron encodes many unrelated concepts (polysemanticity / superposition)</div>
+      </div>
+      <div class="stat">
+        <div class="num">Aug 2026</div>
+        <div class="lbl">EU AI Act transparency &amp; high-risk obligations scheduled to apply</div>
+      </div>
+    </div>
+
+    <div class="grid g3">
+      <div class="card reveal">
+        <span class="ico">⌬</span>
+        <span class="tag">Model Complexity</span>
+        <h3>Scale beyond inspection</h3>
+        <p>Behavior emerges from billions of interacting weights across dozens of layers. Concepts are <strong>distributed</strong>, not stored in tidy locations, so there is no single line to point to and say "this is the reason."</p>
+      </div>
+      <div class="card reveal">
+        <span class="ico">◑</span>
+        <span class="tag">Opaque Decisions</span>
+        <h3>The story may not be true</h3>
+        <p>A model's stated reasoning can be a <strong>plausible narrative rather than its actual computation</strong>. An explanation that sounds convincing but doesn't reflect the real mechanism is worse than none — it's misplaced confidence.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ico">§</span>
+        <span class="tag">Regulatory Pressure</span>
+        <h3>The law is arriving first</h3>
+        <p>The <strong>EU AI Act</strong>, GDPR's right to explanation, and frameworks like the <strong>NIST AI RMF</strong> demand transparency that the technology can't yet fully deliver — making explainability a compliance problem, not just a research one.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. VALIDATION & METRICS ============ -->
+<section id="validation">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">03</span>
+      <h2>Validation &amp; performance metrics</h2>
+    </div>
+    <p class="sec-intro reveal">Two questions sit at the heart of trust: <em>Is the model reliable?</em> and <em>Is the explanation honest?</em> Metrics give both questions a measurable answer — and a bad explanation can be as dangerous as a bad model.</p>
+
+    <p class="tier-label reveal">Is the explanation trustworthy?</p>
+    <div class="metrics">
+      <div class="mrow reveal"><div class="ml">Faithfulness</div><div class="mr"><b>Does the explanation reflect what the model actually did?</b> The most important — and hardest — property. A faithful explanation tracks the true drivers of the output, not a post-hoc rationalization.</div></div>
+      <div class="mrow reveal"><div class="ml">Robustness</div><div class="mr"><b>Stability under small changes.</b> Near-identical inputs should yield near-identical explanations; wild swings signal an unreliable method.</div></div>
+      <div class="mrow reveal"><div class="ml">Completeness</div><div class="mr"><b>Coverage of the decision.</b> Do the highlighted factors actually account for the output, or is most of the reasoning still hidden?</div></div>
+      <div class="mrow reveal"><div class="ml">Comprehensibility</div><div class="mr"><b>Can a human use it?</b> An explanation too complex to act on fails its only job. Simplicity is a feature, not a compromise.</div></div>
+    </div>
+
+    <p class="tier-label reveal">Is the model reliable?</p>
+    <div class="metrics">
+      <div class="mrow reveal"><div class="ml">Accuracy · F1 · AUC</div><div class="mr">Core predictive quality — is the model right, and right in a balanced way across classes?</div></div>
+      <div class="mrow reveal"><div class="ml">Calibration</div><div class="mr">Does a stated 80% confidence mean it's right 80% of the time? Miscalibrated confidence erodes trust faster than error itself.</div></div>
+      <div class="mrow reveal"><div class="ml">Robustness &amp; Drift</div><div class="mr">Does performance hold under adversarial inputs and real-world distribution shift — not just the test set?</div></div>
+      <div class="mrow reveal"><div class="ml">Hallucination Rate</div><div class="mr">For generative models, how often does output sound authoritative but is factually wrong?</div></div>
+    </div>
+
+    <div class="callout reveal">
+      <p>Validation closes the loop: <strong>metrics measure reliability → reliability earns accountability → accountability builds trust.</strong> Explainability is the connective tissue that makes each step verifiable rather than assumed.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. SOLUTIONS & TECHNIQUES ============ -->
+<section id="solutions">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-num">04</span>
+      <h2>How we're prying the box open</h2>
+    </div>
+    <p class="sec-intro reveal">Today's approaches fall into two camps: looking at <em>what mattered</em> for one decision (attribution), and looking at <em>how the model works inside</em> (mechanistic interpretability).</p>
+
+    <p class="tier-label reveal">Attribution · post-hoc &amp; model-agnostic</p>
+    <div class="grid g4">
+      <div class="card reveal">
+        <span class="tag">Game Theory</span>
+        <h3>SHAP</h3>
+        <p>Assigns each feature a fair "credit" for the prediction using Shapley values — works globally and per-instance.</p>
+      </div>
+      <div class="card reveal">
+        <span class="tag">Local Surrogate</span>
+        <h3>LIME</h3>
+        <p>Approximates any model locally with a simple, interpretable one to explain a single decision.</p>
+      </div>
+      <div class="card reveal">
+        <span class="tag">Gradient-Based</span>
+        <h3>Integrated Gradients &amp; DeepLIFT</h3>
+        <p>Trace output sensitivity back to inputs — often the most faithful and stable on deep networks.</p>
+      </div>
+      <div class="card reveal">
+        <span class="tag">Attention &amp; Saliency</span>
+        <h3>Attention Maps · GradCAM</h3>
+        <p>Visualize where a model "looks" in text or images — intuitive, though attention ≠ full explanation.</p>
+      </div>
+    </div>
+
+    <p class="tier-label reveal">Mechanistic interpretability · looking inside</p>
+    <div class="grid g3">
+      <div class="card reveal">
+        <span class="tag">Decomposing Features</span>
+        <h3>Sparse Autoencoders</h3>
+        <p>Untangle the overlapping concepts crammed into each neuron into clean, <strong>monosemantic features</strong> — one direction, one human-meaningful idea.</p>
+      </div>
+      <div class="card reveal">
+        <span class="tag">Tracing Computation</span>
+        <h3>Circuit Tracing &amp; Attribution Graphs</h3>
+        <p>Map the step-by-step pathways a model uses to reach an answer — revealing planning, multi-step reasoning, and shared multilingual concepts.</p>
+      </div>
+      <div class="card reveal">
+        <span class="tag">Reasoning Transparency</span>
+        <h3>Chain-of-Thought &amp; Steering</h3>
+        <p>Expose intermediate reasoning, then test it by <strong>intervening</strong> on internal features to confirm cause rather than correlation.</p>
+      </div>
+    </div>
+
+    <p class="tier-label reveal">Who's building it</p>
+    <div class="orgs">
+      <div class="org reveal">
+        <div class="who">Anthropic</div>
+        <p>Open-sourced <strong>circuit-tracing tools</strong> (2025) that build attribution graphs; "Biology of an LLM" research dissecting Claude's internal reasoning.</p>
+      </div>
+      <div class="org reveal">
+        <div class="who">Google DeepMind</div>
+        <p><strong>Gemma Scope</strong> — sparse autoencoders released across an open model — plus collaboration on the shared circuit-tracing landscape.</p>
+      </div>
+      <div class="org reveal">
+        <div class="who">OpenAI</div>
+        <p>Research on scaling sparse autoencoders and structured evaluation frameworks for measuring model and explanation quality.</p>
+      </div>
+      <div class="org reveal">
+        <div class="who">Open Ecosystem</div>
+        <p>Shared tooling like <strong>Neuronpedia</strong> and circuit-tracer lets anyone generate, annotate, and stress-test interpretations.</p>
+      </div>
+    </div>
+
+    <div class="callout reveal">
+      <p>Honest caveat: these tools reveal <em>fragments</em>, not the whole picture. Researchers actively debate how faithfully today's methods reflect real computation — which is exactly why <strong>validation metrics belong at the center of the field</strong>, not the edge.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLOSE ============ -->
+<section class="close" id="close">
+  <div class="wrap">
+    <span class="eyebrow reveal">The trust loop</span>
+    <h2 class="reveal" style="margin-top:18px">Capability is the easy part. Accountability is the work.</h2>
+    <p class="lead reveal">Explainability, validation, and metrics aren't separate concerns — they're one system. Each makes the next verifiable, and together they convert a powerful black box into something people, regulators, and organizations can actually trust.</p>
+    <div class="loop reveal">
+      <div class="step"><div class="n">STEP 01</div><h3>Explain</h3><p>Surface why the model decided</p></div>
+      <div class="step"><div class="n">STEP 02</div><h3>Validate</h3><p>Test the explanation is faithful</p></div>
+      <div class="step"><div class="n">STEP 03</div><h3>Measure</h3><p>Quantify reliability with metrics</p></div>
+      <div class="step"><div class="n">STEP 04</div><h3>Account</h3><p>Stand behind the decision</p></div>
+      <div class="step"><div class="n">STEP 05</div><h3>Trust</h3><p>Deploy where it matters</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <span>Explainable AI · Visual Artifact</span>
+    <span>Built for the AI/ML Professional Portfolio</span>
+    <span><a href="#what">↑ Back to top</a></span>
+  </div>
+</footer>
+
+<script>
+  /* scroll reveal */
+  (function(){
+    var els=document.querySelectorAll('.reveal');
+    if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});return;}
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}});
+    },{threshold:.12,rootMargin:'0px 0px -8% 0px'});
+    els.forEach(function(e){io.observe(e);});
+  })();
+
+  /* generative neural core inside the box motif */
+  (function(){
+    var core=document.getElementById('core');
+    if(!core) return;
+    var layers=[2,3,3,2], W=100, H=100, xs=[16,40,64,86], nodes=[];
+    layers.forEach(function(c,li){
+      var col=[];
+      for(var i=0;i<c;i++){
+        var y=(H/(c+1))*(i+1);
+        var n=document.createElement('span');
+        n.className='node';
+        n.style.left='calc('+xs[li]+'% - 4.5px)';
+        n.style.top='calc('+y+'% - 4.5px)';
+        n.style.animation='pulse '+(2+Math.random()*2).toFixed(2)+'s ease-in-out infinite';
+        n.style.animationDelay=(Math.random()*2).toFixed(2)+'s';
+        core.appendChild(n);
+        col.push({x:xs[li],y:y});
+      }
+      nodes.push(col);
+    });
+    for(var l=0;l<nodes.length-1;l++){
+      nodes[l].forEach(function(a){
+        nodes[l+1].forEach(function(b){
+          var dx=b.x-a.x, dy=b.y-a.y, len=Math.sqrt(dx*dx+dy*dy), ang=Math.atan2(dy,dx)*180/Math.PI;
+          var e=document.createElement('span');
+          e.className='edge';
+          e.style.left=a.x+'%'; e.style.top=a.y+'%';
+          e.style.width=len+'%'; e.style.transform='rotate('+ang+'deg)';
+          e.style.opacity=(0.25+Math.random()*0.4).toFixed(2);
+          core.appendChild(e);
+        });
+      });
+    }
+    var st=document.createElement('style');
+    st.textContent='@keyframes pulse{0%,100%{box-shadow:0 0 6px 1px rgba(244,185,66,.35);opacity:.6}50%{box-shadow:0 0 16px 3px rgba(244,185,66,.7);opacity:1}}';
+    document.head.appendChild(st);
+  })();
+</script>
+</body>
+</html>
