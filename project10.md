@@ -2,7 +2,7 @@
 
 This artifact is an interactive visual infographic explaining Explainable AI (XAI): why transparency in AI is critical, why it is technically hard, how explanations and models are validated, and what techniques industry leaders use to make modern AI understandable.
 
-[**▶ View the live infographic**](https://karthikram-senthilvel.github.io/aiml-portfolio/explainable-ai-infographic.html)
+[**▶ View the live infographic**](./assets/explainable-ai-infographic.html)
 
 ## Objective
 
