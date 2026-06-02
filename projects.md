@@ -20,6 +20,12 @@
 
 * ### [Understanding Neural Networks](./project7)
     A visual exploration of layers, neurons, weights, activation functions, loss functions, and optimization algorithms — with live observations from TensorFlow Playground.
+  
+* ### [Machine Learning Algorithms — A Visual Framework](./project8)
+    A one-page visual reference classifying 12 foundational ML algorithms by learning type and application domain — spanning classical ML, deep learning, and generative AI.
+
+* ### [How a Large Language Model Is Trained](./project9)
+    An infographic mapping the LLM training pipeline — from data collection to deployment — with the resource economics behind frontier models like GPT-4, Claude, and Llama 3.1 405B.
 
 ---
 * [Back to Home](./)
