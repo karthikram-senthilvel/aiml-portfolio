@@ -30,5 +30,8 @@
 * ### [Explainable AI — Inside the Black Box](./project10)
     An interactive infographic on explainable AI — why transparency matters, the challenges of opening the black box, how models and explanations are validated, and the techniques industry leaders use to make AI understandable.
 
+* ### [The Middle Ground — Shark Tank Pitch](./project11)
+    A fully interactive Shark Tank pitch for a coffee-meets-tea DTC brand — featuring a live blend selector, market analysis, supply chain strategy, and a $750K funding ask at a $7.5M valuation.
+
 ---
 * [Back to Home](./)
