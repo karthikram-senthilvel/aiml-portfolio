@@ -36,5 +36,8 @@
 * ### [Decision Matrix for Pre-Trained Model Selection](./project12)
     An interactive decision matrix comparing four pre-trained models — GPT-2, BERT-base, EfficientNet-B0, MobileNetV2, and XGBoost — across NLP, Computer Vision, and Tabular domains, with live re-ranking based on adjustable size/accuracy/speed priorities.
 
+* ### [MedBridge Cardiac Readmission — Model Comparison](./project13)
+  Comparing Random Forest, XGBoost, LightGBM, and CatBoost to flag high-risk cardiac patients before discharge — and why recall, not accuracy, is the metric that matters.
+
 ---
 * [Back to Home](./)
