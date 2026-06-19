@@ -33,5 +33,8 @@
 * ### [The Middle Ground — Shark Tank Pitch](./project11)
     A fully interactive Shark Tank pitch for a coffee-meets-tea DTC brand — featuring a live blend selector, market analysis, supply chain strategy, and a $750K funding ask at a $7.5M valuation.
 
+* ### [Decision Matrix for Pre-Trained Model Selection](./project12)
+    An interactive decision matrix comparing four pre-trained models — GPT-2, BERT-base, EfficientNet-B0, MobileNetV2, and XGBoost — across NLP, Computer Vision, and Tabular domains, with live re-ranking based on adjustable size/accuracy/speed priorities.
+
 ---
 * [Back to Home](./)
