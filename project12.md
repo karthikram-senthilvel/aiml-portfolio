@@ -1,7 +1,3 @@
----
-layout: default
-title: Decision Matrix for Pre-Trained Model Selection
----
 
 # Decision Matrix for Pre-Trained Model Selection
 
