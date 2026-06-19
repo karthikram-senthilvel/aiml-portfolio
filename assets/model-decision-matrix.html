@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pre-Trained Model Decision Matrix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14171C;
+    --bg-raised:#1B1F26;
+    --bg-card:#1F232B;
+    --grid:#2A2E35;
+    --grid-soft:#23272F;
+    --paper:#EDEAE3;
+    --paper-dim:#9DA3AD;
+    --paper-faint:#6B7280;
+    --nlp:#D98E3C;
+    --nlp-dim:#3A2F1E;
+    --vision:#3D9C8E;
+    --vision-dim:#1B2E2A;
+    --tabular:#8B7FD6;
+    --tabular-dim:#28243D;
+    --mono:'IBM Plex Mono', monospace;
+    --sans:'IBM Plex Sans', sans-serif;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  body{
+    background:var(--bg);
+    color:var(--paper);
+    font-family:var(--sans);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
+
+  /* ===== HEADER ===== */
+  header{
+    border-bottom:1px solid var(--grid);
+    padding:48px 0 36px;
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--paper-faint);
+    margin-bottom:18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:'';
+    width:7px;height:7px;
+    border-radius:50%;
+    background:var(--vision);
+    box-shadow:0 0 0 3px var(--vision-dim);
+  }
+  h1{
+    font-size:38px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    margin-bottom:14px;
+    max-width:680px;
+  }
+  .sub{
+    font-size:16px;
+    color:var(--paper-dim);
+    max-width:600px;
+  }
+
+  /* ===== TRIANGLE THESIS ===== */
+  .thesis{
+    padding:44px 0 50px;
+    border-bottom:1px solid var(--grid);
+  }
+  .thesis-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:48px;
+    align-items:center;
+  }
+  .thesis-text h2{
+    font-size:22px;
+    font-weight:600;
+    margin-bottom:14px;
+  }
+  .thesis-text p{
+    color:var(--paper-dim);
+    font-size:15px;
+    margin-bottom:12px;
+  }
+  .thesis-text p:last-child{margin-bottom:0;}
+  .tri-svg{width:100%; max-width:380px; margin:0 auto; display:block;}
+
+  /* ===== DOMAIN LEGEND ===== */
+  .legend{
+    display:flex;
+    gap:22px;
+    margin-top:20px;
+    flex-wrap:wrap;
+  }
+  .legend-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--paper-dim);
+  }
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .dot.nlp{background:var(--nlp);}
+  .dot.vision{background:var(--vision);}
+  .dot.tabular{background:var(--tabular);}
+
+  /* ===== MODEL CARDS ===== */
+  .cards-section{padding:50px 0;border-bottom:1px solid var(--grid);}
+  .section-label{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--paper-faint);
+    margin-bottom:22px;
+  }
+  .cards{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:16px;
+  }
+  .card{
+    background:var(--bg-card);
+    border:1px solid var(--grid);
+    border-radius:6px;
+    padding:22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;
+    width:3px;height:100%;
+  }
+  .card.nlp::before{background:var(--nlp);}
+  .card.vision::before{background:var(--vision);}
+  .card.tabular::before{background:var(--tabular);}
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:14px;
+  }
+  .card-name{font-size:18px;font-weight:700;}
+  .card-tag{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    padding:4px 8px;
+    border-radius:3px;
+    white-space:nowrap;
+  }
+  .card.nlp .card-tag{background:var(--nlp-dim);color:var(--nlp);}
+  .card.vision .card-tag{background:var(--vision-dim);color:var(--vision);}
+  .card.tabular .card-tag{background:var(--tabular-dim);color:var(--tabular);}
+  .card-desc{
+    font-size:13.5px;
+    color:var(--paper-dim);
+    margin-bottom:16px;
+    min-height:54px;
+  }
+  .card-stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    border-top:1px solid var(--grid-soft);
+    padding-top:14px;
+  }
+  .stat-label{
+    font-family:var(--mono);
+    font-size:10px;
+    color:var(--paper-faint);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin-bottom:4px;
+  }
+  .stat-value{
+    font-family:var(--mono);
+    font-size:15px;
+    font-weight:600;
+  }
+
+  /* ===== MATRIX TOOL ===== */
+  .matrix-section{padding:50px 0 60px;}
+  .matrix-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+    gap:16px;
+  }
+  .matrix-head h2{font-size:22px;font-weight:600;}
+  .matrix-head p{color:var(--paper-dim);font-size:14px;max-width:480px;margin-top:6px;}
+
+  .sliders{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+    margin-bottom:32px;
+    background:var(--bg-raised);
+    border:1px solid var(--grid);
+    border-radius:6px;
+    padding:22px;
+  }
+  .slider-group{display:flex;flex-direction:column;gap:10px;}
+  .slider-label{
+    display:flex;
+    justify-content:space-between;
+    font-family:var(--mono);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--paper-dim);
+  }
+  .slider-label span.val{color:var(--paper);font-weight:600;}
+  input[type=range]{
+    -webkit-appearance:none;
+    width:100%;
+    height:4px;
+    border-radius:2px;
+    background:var(--grid);
+    outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:16px;height:16px;
+    border-radius:50%;
+    background:var(--paper);
+    cursor:pointer;
+    border:2px solid var(--bg);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;
+    border-radius:50%;
+    background:var(--paper);
+    cursor:pointer;
+    border:2px solid var(--bg);
+  }
+  #priSize::-webkit-slider-thumb{background:var(--nlp);}
+  #priAcc::-webkit-slider-thumb{background:var(--vision);}
+  #priSpeed::-webkit-slider-thumb{background:var(--tabular);}
+
+  .preset-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+  .preset-btn{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    background:var(--bg-card);
+    color:var(--paper-dim);
+    border:1px solid var(--grid);
+    border-radius:4px;
+    padding:8px 14px;
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+  .preset-btn:hover{border-color:var(--paper-faint);color:var(--paper);}
+  .preset-btn.active{
+    background:var(--paper);
+    color:var(--bg);
+    border-color:var(--paper);
+  }
+
+  .ranked-list{display:flex;flex-direction:column;gap:10px;}
+  .rank-row{
+    display:grid;
+    grid-template-columns:32px 1fr 120px;
+    align-items:center;
+    gap:16px;
+    background:var(--bg-card);
+    border:1px solid var(--grid);
+    border-radius:6px;
+    padding:14px 18px;
+    transition:transform 0.25s ease, border-color 0.25s ease;
+  }
+  .rank-num{
+    font-family:var(--mono);
+    font-size:18px;
+    font-weight:700;
+    color:var(--paper-faint);
+  }
+  .rank-num.top{color:var(--paper);}
+  .rank-info{display:flex;align-items:center;gap:10px;}
+  .rank-name{font-weight:700;font-size:15px;}
+  .rank-domain-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .rank-bar-wrap{
+    margin-top:6px;
+    height:5px;
+    background:var(--grid-soft);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .rank-bar{
+    height:100%;
+    border-radius:3px;
+    transition:width 0.3s ease;
+  }
+  .rank-score{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--paper-dim);
+    text-align:right;
+  }
+  .rank-score .num{color:var(--paper);font-weight:600;font-size:15px;}
+
+  /* ===== FOOTNOTE ===== */
+  .footnote{
+    padding:28px 0 48px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--paper-faint);
+    line-height:1.7;
+    border-top:1px solid var(--grid);
+  }
+  .footnote p{margin-bottom:6px;}
+
+  @media (max-width:720px){
+    .thesis-grid{grid-template-columns:1fr;}
+    .cards{grid-template-columns:1fr;}
+    .sliders{grid-template-columns:1fr;}
+    .rank-row{grid-template-columns:24px 1fr 90px;padding:12px 14px;}
+    h1{font-size:28px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Model Selection &middot; Decision Framework</div>
+    <h1>Every pre-trained model is a trade-off you're choosing whether to make consciously.</h1>
+    <p class="sub">A comparison of four production-grade models across NLP, computer vision, and tabular domains — sized, scored, and benchmarked, then weighed against each other on your terms.</p>
+  </header>
+
+  <section class="thesis">
+    <div class="thesis-grid">
+      <div class="thesis-text">
+        <h2>Size, accuracy, and speed pull against each other</h2>
+        <p>No model wins on all three axes at once. A larger model usually buys accuracy at the cost of memory and latency. A distilled or pruned model buys speed by giving some accuracy back. The right choice depends entirely on where the model has to run and what a wrong answer costs.</p>
+        <p>The matrix below treats that as an explicit input rather than an afterthought — move the sliders to reflect what actually matters for your deployment, and watch the ranking change.</p>
+      </div>
+      <svg class="tri-svg" viewBox="0 0 380 340" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="190,28 340,300 40,300" fill="none" stroke="#2A2E35" stroke-width="1.5"/>
+        <line x1="190" y1="28" x2="190" y2="300" stroke="#23272F" stroke-width="1"/>
+        <line x1="40" y1="300" x2="265" y2="164" stroke="#23272F" stroke-width="1"/>
+        <line x1="340" y1="300" x2="115" y2="164" stroke="#23272F" stroke-width="1"/>
+        <circle cx="190" cy="28" r="5" fill="#D98E3C"/>
+        <text x="190" y="10" text-anchor="middle" fill="#D98E3C" font-family="IBM Plex Mono" font-size="13" font-weight="600">ACCURACY</text>
+        <circle cx="340" cy="300" r="5" fill="#3D9C8E"/>
+        <text x="346" y="322" text-anchor="start" fill="#3D9C8E" font-family="IBM Plex Mono" font-size="13" font-weight="600">SPEED</text>
+        <circle cx="40" cy="300" r="5" fill="#8B7FD6"/>
+        <text x="34" y="322" text-anchor="end" fill="#8B7FD6" font-family="IBM Plex Mono" font-size="13" font-weight="600">SIZE</text>
+        <polygon points="190,90 270,275 110,275" fill="#D98E3C" opacity="0.08" stroke="#6B7280" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="190" y="180" text-anchor="middle" fill="#6B7280" font-family="IBM Plex Mono" font-size="10.5">pick two,</text>
+        <text x="190" y="194" text-anchor="middle" fill="#6B7280" font-family="IBM Plex Mono" font-size="10.5">budget the third</text>
+      </svg>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="dot nlp"></span> NLP / Generative AI</div>
+      <div class="legend-item"><span class="dot vision"></span> Computer Vision</div>
+      <div class="legend-item"><span class="dot tabular"></span> Tabular / Structured Data</div>
+    </div>
+  </section>
+
+  <section class="cards-section">
+    <div class="section-label">The Four Models</div>
+    <div class="cards">
+
+      <div class="card nlp">
+        <div class="card-top">
+          <div class="card-name">GPT-2 (1.5B)</div>
+          <div class="card-tag">NLP &middot; Generative</div>
+        </div>
+        <div class="card-desc">Autoregressive transformer for open-ended text generation. The largest and slowest model in this set — chosen as the generative-AI anchor point against three discriminative/compact models.</div>
+        <div class="card-stats">
+          <div><div class="stat-label">Params</div><div class="stat-value">1.5B</div></div>
+          <div><div class="stat-label">Quality†</div><div class="stat-value">~Mid</div></div>
+          <div><div class="stat-label">Latency</div><div class="stat-value">Slow</div></div>
+        </div>
+      </div>
+
+      <div class="card nlp">
+        <div class="card-top">
+          <div class="card-name">BERT-base</div>
+          <div class="card-tag">NLP &middot; Encoder</div>
+        </div>
+        <div class="card-desc">Bidirectional encoder for classification, NER, and retrieval tasks. The reference point the whole compact-NLP literature benchmarks against.</div>
+        <div class="card-stats">
+          <div><div class="stat-label">Params</div><div class="stat-value">110M</div></div>
+          <div><div class="stat-label">GLUE avg</div><div class="stat-value">~79.1</div></div>
+          <div><div class="stat-label">Latency</div><div class="stat-value">~15ms*</div></div>
+        </div>
+      </div>
+
+      <div class="card vision">
+        <div class="card-top">
+          <div class="card-name">EfficientNet-B0</div>
+          <div class="card-tag">Vision &middot; CNN</div>
+        </div>
+        <div class="card-desc">Compound-scaled CNN balancing depth, width, and resolution. Strong accuracy-per-parameter on ImageNet, designed explicitly around this exact trade-off.</div>
+        <div class="card-stats">
+          <div><div class="stat-label">Params</div><div class="stat-value">5.3M</div></div>
+          <div><div class="stat-label">Top-1 Acc</div><div class="stat-value">77.1%</div></div>
+          <div><div class="stat-label">Latency</div><div class="stat-value">~7ms*</div></div>
+        </div>
+      </div>
+
+      <div class="card vision">
+        <div class="card-top">
+          <div class="card-name">MobileNetV2</div>
+          <div class="card-tag">Vision &middot; CNN</div>
+        </div>
+        <div class="card-desc">Depthwise-separable convolutions built for phones and edge devices. Trades a few points of accuracy for a footprint small enough to ship on-device.</div>
+        <div class="card-stats">
+          <div><div class="stat-label">Params</div><div class="stat-value">3.4M</div></div>
+          <div><div class="stat-label">Top-1 Acc</div><div class="stat-value">72.0%</div></div>
+          <div><div class="stat-label">Latency</div><div class="stat-value">~4ms*</div></div>
+        </div>
+      </div>
+
+      <div class="card tabular" style="grid-column: span 2;">
+        <div class="card-top">
+          <div class="card-name">XGBoost</div>
+          <div class="card-tag">Tabular &middot; Gradient Boosting</div>
+        </div>
+        <div class="card-desc">Gradient-boosted decision trees — the default starting point for structured/tabular prediction tasks like demand forecasting, churn, and credit risk. Not "pre-trained" in the foundation-model sense, but included as the standard tabular comparison point: small footprint, near-instant inference, and feature-level interpretability that neural models on this list can't match natively.</div>
+        <div class="card-stats">
+          <div><div class="stat-label">Model size</div><div class="stat-value">1&ndash;50MB</div></div>
+          <div><div class="stat-label">Accuracy‡</div><div class="stat-value">Task-dep.</div></div>
+          <div><div class="stat-label">Latency</div><div class="stat-value">&lt;1ms*</div></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="matrix-section">
+    <div class="matrix-head">
+      <div>
+        <h2>The Decision Matrix</h2>
+        <p>Set how much each criterion matters for your use case. The ranking re-scores live — there's no single "best" model, only the best model for these weights.</p>
+      </div>
+    </div>
+
+    <div class="preset-row">
+      <button class="preset-btn" data-preset="balanced">Balanced</button>
+      <button class="preset-btn" data-preset="edge">Edge / On-Device</button>
+      <button class="preset-btn" data-preset="accuracy">Accuracy-First</button>
+      <button class="preset-btn" data-preset="realtime">Real-Time Serving</button>
+    </div>
+
+    <div class="sliders">
+      <div class="slider-group">
+        <div class="slider-label">Size Priority <span class="val" id="vSize">33%</span></div>
+        <input type="range" id="priSize" min="0" max="100" value="33">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label">Accuracy Priority <span class="val" id="vAcc">34%</span></div>
+        <input type="range" id="priAcc" min="0" max="100" value="34">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label">Speed Priority <span class="val" id="vSpeed">33%</span></div>
+        <input type="range" id="priSpeed" min="0" max="100" value="33">
+      </div>
+    </div>
+
+    <div class="ranked-list" id="rankedList"></div>
+  </section>
+
+  <div class="footnote">
+    <p>* Latency figures are representative single-sample CPU/edge-class inference figures drawn from published benchmarks (Hugging Face model cards, original EfficientNet/MobileNet papers, GLUE leaderboard); actual latency varies significantly by hardware, batch size, and quantization.</p>
+    <p>† GPT-2 quality is not GLUE-comparable (generative vs. discriminative task); shown qualitatively relative to the encoder models in this set.</p>
+    <p>‡ XGBoost accuracy is inherently dataset- and task-specific; no single benchmark number generalizes the way ImageNet or GLUE do for the neural models above.</p>
+    <p>Normalized scores (0&ndash;100 per axis, inverted for size/latency so "smaller/faster is better") combined as a weighted sum per the slider values above. A teaching tool for comparative reasoning, not a procurement benchmark.</p>
+  </div>
+
+</div>
+
+<script>
+const models = [
+  { name:'GPT-2 (1.5B)', domain:'nlp', size:0.05, acc:0.55, speed:0.10 },
+  { name:'BERT-base', domain:'nlp', size:0.78, acc:0.80, speed:0.62 },
+  { name:'EfficientNet-B0', domain:'vision', size:0.93, acc:0.77, speed:0.85 },
+  { name:'MobileNetV2', domain:'vision', size:0.97, acc:0.70, speed:0.95 },
+  { name:'XGBoost', domain:'tabular', size:0.99, acc:0.75, speed:1.00 },
+];
+
+const domainColor = { nlp:'var(--nlp)', vision:'var(--vision)', tabular:'var(--tabular)' };
+
+const sSize = document.getElementById('priSize');
+const sAcc = document.getElementById('priAcc');
+const sSpeed = document.getElementById('priSpeed');
+const vSize = document.getElementById('vSize');
+const vAcc = document.getElementById('vAcc');
+const vSpeed = document.getElementById('vSpeed');
+const rankedList = document.getElementById('rankedList');
+const presetBtns = document.querySelectorAll('.preset-btn');
+
+function normalizedWeights(){
+  let a = +sSize.value, b = +sAcc.value, c = +sSpeed.value;
+  let total = a+b+c;
+  if(total === 0){ a=b=c=1; total=3; }
+  return { size:a/total, acc:b/total, speed:c/total };
+}
+
+function render(){
+  const w = normalizedWeights();
+  vSize.textContent = Math.round(w.size*100)+'%';
+  vAcc.textContent = Math.round(w.acc*100)+'%';
+  vSpeed.textContent = Math.round(w.speed*100)+'%';
+
+  const scored = models.map(m => ({
+    ...m,
+    score: (m.size*w.size + m.acc*w.acc + m.speed*w.speed) * 100
+  })).sort((x,y) => y.score - x.score);
+
+  rankedList.innerHTML = scored.map((m, i) => `
+    <div class="rank-row">
+      <div class="rank-num ${i===0 ? 'top' : ''}">${i+1}</div>
+      <div>
+        <div class="rank-info">
+          <span class="rank-domain-dot" style="background:${domainColor[m.domain]}"></span>
+          <span class="rank-name">${m.name}</span>
+        </div>
+        <div class="rank-bar-wrap">
+          <div class="rank-bar" style="width:${m.score}%; background:${domainColor[m.domain]}"></div>
+        </div>
+      </div>
+      <div class="rank-score"><span class="num">${m.score.toFixed(1)}</span> / 100</div>
+    </div>
+  `).join('');
+}
+
+[sSize, sAcc, sSpeed].forEach(s => s.addEventListener('input', () => {
+  presetBtns.forEach(b => b.classList.remove('active'));
+  render();
+}));
+
+const presets = {
+  balanced:  [33,34,33],
+  edge:      [70,15,15],
+  accuracy:  [10,75,15],
+  realtime:  [15,15,70],
+};
+
+presetBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    presetBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const [a,b,c] = presets[btn.dataset.preset];
+    sSize.value = a; sAcc.value = b; sSpeed.value = c;
+    render();
+  });
+});
+
+render();
+</script>
+
+</body>
+</html>
